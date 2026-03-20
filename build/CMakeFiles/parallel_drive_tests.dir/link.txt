@@ -1,0 +1,1 @@
+/usr/bin/c++  -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/parallel_drive_tests.dir/tests/parallel_drive_tests.cpp.o -o parallel_drive_tests  libpdu_core.a

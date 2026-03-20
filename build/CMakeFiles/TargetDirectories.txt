@@ -1,0 +1,6 @@
+/Users/luquanli/Files/items/parallel_drive_unit_ctrl/build/CMakeFiles/pdu_core.dir
+/Users/luquanli/Files/items/parallel_drive_unit_ctrl/build/CMakeFiles/parallel_drive_app.dir
+/Users/luquanli/Files/items/parallel_drive_unit_ctrl/build/CMakeFiles/parallel_drive_tests.dir
+/Users/luquanli/Files/items/parallel_drive_unit_ctrl/build/CMakeFiles/test.dir
+/Users/luquanli/Files/items/parallel_drive_unit_ctrl/build/CMakeFiles/edit_cache.dir
+/Users/luquanli/Files/items/parallel_drive_unit_ctrl/build/CMakeFiles/rebuild_cache.dir

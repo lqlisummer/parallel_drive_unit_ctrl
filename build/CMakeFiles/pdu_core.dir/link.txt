@@ -1,0 +1,2 @@
+/usr/bin/ar qc libpdu_core.a CMakeFiles/pdu_core.dir/src/backend_factory.cpp.o CMakeFiles/pdu_core.dir/src/config.cpp.o CMakeFiles/pdu_core.dir/src/kinematics.cpp.o CMakeFiles/pdu_core.dir/src/mock_motor_backend.cpp.o CMakeFiles/pdu_core.dir/src/parallel_drive_unit.cpp.o
+/usr/bin/ranlib libpdu_core.a
