@@ -14,39 +14,93 @@ ParallelDriveUnit::~ParallelDriveUnit() {
     Shutdown();
 }
 
-void ParallelDriveUnit::Start() {
-    if (started_) {
+void ParallelDriveUnit::Connect() {
+    if (connected_) {
         return;
     }
 
     backend_->Initialize();
+    connected_ = true;
+}
+
+void ParallelDriveUnit::Start() {
+    Connect();
 
     if (config_.control.clear_fault_on_start) {
-        backend_->ClearFault();
-    }
-
-    if (config_.control.auto_enable) {
-        backend_->Enable();
+        ClearFault();
     }
 
     if (config_.control.zero_on_start) {
-        backend_->ZeroOutput();
+        ZeroOutput();
     }
 
-    started_ = true;
+    SetMode(config_.control.command_mode);
+
+    if (config_.control.auto_enable) {
+        Enable();
+    }
 }
 
 void ParallelDriveUnit::Shutdown() noexcept {
-    if (!started_ || !backend_) {
+    if (!connected_ || !backend_) {
         return;
     }
+    try {
+        backend_->Disable();
+    } catch (...) {
+    }
     backend_->Shutdown();
-    started_ = false;
+    active_mode_ = CommandMode::kNone;
+    connected_ = false;
+}
+
+void ParallelDriveUnit::SetMode(CommandMode mode) {
+    if (!connected_) {
+        throw std::runtime_error("ParallelDriveUnit is not connected");
+    }
+
+    backend_->SetControlMode(mode);
+    active_mode_ = mode;
+    config_.control.command_mode = mode;
+}
+
+void ParallelDriveUnit::ClearFault() {
+    if (!connected_) {
+        throw std::runtime_error("ParallelDriveUnit is not connected");
+    }
+    backend_->ClearFault();
+}
+
+void ParallelDriveUnit::Enable() {
+    if (!connected_) {
+        throw std::runtime_error("ParallelDriveUnit is not connected");
+    }
+    if (active_mode_ == CommandMode::kNone) {
+        SetMode(config_.control.command_mode);
+    }
+    backend_->Enable();
+}
+
+void ParallelDriveUnit::Disable() {
+    if (!connected_) {
+        throw std::runtime_error("ParallelDriveUnit is not connected");
+    }
+    backend_->Disable();
+}
+
+void ParallelDriveUnit::ZeroOutput() {
+    if (!connected_) {
+        throw std::runtime_error("ParallelDriveUnit is not connected");
+    }
+    backend_->ZeroOutput();
 }
 
 void ParallelDriveUnit::CommandJoints(const JointCommand& joint_command) {
-    if (!started_) {
-        throw std::runtime_error("ParallelDriveUnit is not started");
+    if (!connected_) {
+        throw std::runtime_error("ParallelDriveUnit is not connected");
+    }
+    if (active_mode_ == CommandMode::kNone || active_mode_ == CommandMode::kBrake || active_mode_ == CommandMode::kOpenLoop) {
+        throw std::runtime_error("Active mode does not accept joint commands");
     }
 
     const MotorPairCommand motor_command = ParallelDriveKinematics::Inverse(joint_command);
@@ -54,12 +108,19 @@ void ParallelDriveUnit::CommandJoints(const JointCommand& joint_command) {
 }
 
 JointState ParallelDriveUnit::ReadState() {
-    if (!started_) {
-        throw std::runtime_error("ParallelDriveUnit is not started");
+    if (!connected_) {
+        throw std::runtime_error("ParallelDriveUnit is not connected");
     }
 
     const auto [motor2, motor3] = backend_->ReadMotorStates();
     return ParallelDriveKinematics::Forward(motor2, motor3);
+}
+
+HardwareInfo ParallelDriveUnit::QueryHardwareInfo() {
+    if (!connected_) {
+        throw std::runtime_error("ParallelDriveUnit is not connected");
+    }
+    return backend_->QueryHardwareInfo();
 }
 
 const AppConfig& ParallelDriveUnit::Config() const noexcept {
@@ -68,6 +129,14 @@ const AppConfig& ParallelDriveUnit::Config() const noexcept {
 
 const char* ParallelDriveUnit::BackendName() const {
     return backend_ ? backend_->BackendName() : "unknown";
+}
+
+CommandMode ParallelDriveUnit::ActiveMode() const noexcept {
+    return active_mode_;
+}
+
+bool ParallelDriveUnit::IsConnected() const noexcept {
+    return connected_;
 }
 
 }  // namespace pdu

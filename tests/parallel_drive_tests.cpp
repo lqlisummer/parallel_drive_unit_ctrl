@@ -20,6 +20,18 @@ int main() {
     using namespace pdu;
 
     {
+        if (ParseCommandMode("pd_sync") != CommandMode::kPd) {
+            throw std::runtime_error("pd_sync alias parse failed");
+        }
+        if (ParseCommandMode("velocity") != CommandMode::kVelocity) {
+            throw std::runtime_error("velocity parse failed");
+        }
+        if (ToString(CommandMode::kCurrent) != "current") {
+            throw std::runtime_error("current stringify failed");
+        }
+    }
+
+    {
         JointCommand joint_command;
         joint_command.theta1_rad = 0.5;
         joint_command.theta2_rad = 0.2;
@@ -62,7 +74,15 @@ int main() {
         config.runtime.backend = "mock";
 
         ParallelDriveUnit unit(config);
-        unit.Start();
+        unit.Connect();
+
+        const HardwareInfo info = unit.QueryHardwareInfo();
+        if (info.motor2.name != "m2" || info.motor3.name != "m3") {
+            throw std::runtime_error("mock hardware info mismatch");
+        }
+
+        unit.SetMode(CommandMode::kPd);
+        unit.Enable();
 
         JointCommand command;
         command.theta1_rad = 0.25;
@@ -76,6 +96,16 @@ int main() {
         const JointState state = unit.ReadState();
         ExpectNear(state.theta1_rad, 0.25, 1e-9, "mock theta1");
         ExpectNear(state.theta2_rad, -0.05, 1e-9, "mock theta2");
+
+        unit.SetMode(CommandMode::kVelocity);
+        JointCommand velocity_command;
+        velocity_command.theta1_velocity_rad_s = 0.4;
+        velocity_command.theta2_velocity_rad_s = -0.1;
+        unit.CommandJoints(velocity_command);
+        const JointState velocity_state = unit.ReadState();
+        ExpectNear(velocity_state.theta1_velocity_rad_s, 0.4, 1e-9, "mock theta1 velocity");
+        ExpectNear(velocity_state.theta2_velocity_rad_s, -0.1, 1e-9, "mock theta2 velocity");
+
         unit.Shutdown();
     }
 

@@ -33,7 +33,7 @@ struct PdGains {
 };
 
 struct ControlConfig {
-    CommandMode command_mode = CommandMode::kPdSync;
+    CommandMode command_mode = CommandMode::kPd;
     bool auto_enable = true;
     bool clear_fault_on_start = true;
     bool zero_on_start = false;
