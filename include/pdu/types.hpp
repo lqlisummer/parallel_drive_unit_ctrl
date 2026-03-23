@@ -5,8 +5,13 @@
 namespace pdu {
 
 enum class CommandMode {
-    kPositionOnly,
-    kPdSync,
+    kNone = 0,
+    kCurrent = 1,
+    kVelocity = 2,
+    kPosition = 3,
+    kPd = 4,
+    kBrake = 5,
+    kOpenLoop = 0xFF,
 };
 
 struct MotorCommand {
@@ -35,6 +40,7 @@ struct MotorState {
     double current_a = 0.0;
     double load_torque_nm = 0.0;
     double electromagnetic_torque_nm = 0.0;
+    int encoder_value = 0;
 };
 
 struct JointState {
@@ -46,6 +52,19 @@ struct JointState {
     double theta2_load_torque_nm = 0.0;
     MotorState motor2;
     MotorState motor3;
+};
+
+struct MotorIdentity {
+    std::string name;
+    std::string model;
+    std::string firmware_version;
+};
+
+struct HardwareInfo {
+    std::string sdk_version;
+    std::string board_firmware_version;
+    MotorIdentity motor2;
+    MotorIdentity motor3;
 };
 
 std::string ToString(CommandMode mode);

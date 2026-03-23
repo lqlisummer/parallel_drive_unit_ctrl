@@ -108,21 +108,46 @@ void ApplySection(const SectionMap& sections, const std::string& section_name, C
 
 std::string ToString(CommandMode mode) {
     switch (mode) {
-        case CommandMode::kPositionOnly:
-            return "position_only";
-        case CommandMode::kPdSync:
-            return "pd_sync";
+        case CommandMode::kNone:
+            return "none";
+        case CommandMode::kCurrent:
+            return "current";
+        case CommandMode::kVelocity:
+            return "velocity";
+        case CommandMode::kPosition:
+            return "position";
+        case CommandMode::kPd:
+            return "pd";
+        case CommandMode::kBrake:
+            return "brake";
+        case CommandMode::kOpenLoop:
+            return "openloop";
     }
     return "unknown";
 }
 
 CommandMode ParseCommandMode(const std::string& value) {
     const std::string normalized = ToLower(Trim(value));
+    if (normalized == "none") {
+        return CommandMode::kNone;
+    }
+    if (normalized == "current") {
+        return CommandMode::kCurrent;
+    }
+    if (normalized == "velocity" || normalized == "vel") {
+        return CommandMode::kVelocity;
+    }
     if (normalized == "position" || normalized == "position_only") {
-        return CommandMode::kPositionOnly;
+        return CommandMode::kPosition;
     }
     if (normalized == "pd" || normalized == "pd_sync") {
-        return CommandMode::kPdSync;
+        return CommandMode::kPd;
+    }
+    if (normalized == "brake") {
+        return CommandMode::kBrake;
+    }
+    if (normalized == "openloop" || normalized == "open_loop") {
+        return CommandMode::kOpenLoop;
     }
     throw std::runtime_error("Unsupported command mode: " + value);
 }

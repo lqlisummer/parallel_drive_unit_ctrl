@@ -14,11 +14,14 @@ public:
 
     virtual const char* BackendName() const = 0;
     virtual void Initialize() = 0;
+    virtual void SetControlMode(CommandMode mode) = 0;
     virtual void ClearFault() = 0;
     virtual void Enable() = 0;
+    virtual void Disable() = 0;
     virtual void ZeroOutput() = 0;
     virtual void SendCommand(const MotorPairCommand& command) = 0;
     virtual std::pair<MotorState, MotorState> ReadMotorStates() = 0;
+    virtual HardwareInfo QueryHardwareInfo() = 0;
     virtual void Shutdown() noexcept = 0;
 };
 
